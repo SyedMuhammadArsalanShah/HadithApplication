@@ -1,5 +1,5 @@
 # HadithApplication
-Karachi-University (SZIC-UOK) => Books Available
+Karachi-University (SZIC-UOK) Project => Books Available
  <ul>
         <li>📖 Sahih Bukhari | صحيح البخاري</li>
         <li>📖 Sahih Muslim | صحيح مسلم</li>
