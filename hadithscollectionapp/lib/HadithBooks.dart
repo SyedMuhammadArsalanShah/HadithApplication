@@ -1,8 +1,7 @@
 import 'dart:convert';
-
-import 'package:flutter/material.dart';
-import 'package:hadithscollectionapp/HadithChapters.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'HadithChapters.dart';
 
 class HadithBooks extends StatefulWidget {
   const HadithBooks({super.key});
@@ -12,19 +11,22 @@ class HadithBooks extends StatefulWidget {
 }
 
 class _HadithBooksState extends State<HadithBooks> {
-  late String rawdata = "";
   late Map rawdatamap = {};
-  late List<dynamic> datalist = [];
-  void getBooksofHadith() async {
-    var response = await http.get(Uri.parse(
-        "https://hadithapi.com/api/books?apiKey=\$2y\$10\$BylaBcXs5Lw7ZOtYmQ3PXO1x15zpp26oc1FeGktdmF6YeYoRd88e"));
-    // print("SMASB =>" + response.body.toString());
+  late List datalist = [];
 
-    if (response.statusCode == 200) {
+
+
+  
+  void getapi() async {
+    var apiKey =
+        "\$2y\$10\$BylaBcXs5Lw7ZOtYmQ3PXO1x15zpp26oc1FeGktdmF6YeYoRd88e";
+    var res = await http
+        .get(Uri.parse("https://hadithapi.com/api/books?apiKey=$apiKey"));
+// print("SMASB" + res.body);
+
+    if (res.statusCode == 200) {
       setState(() {
-        // rawdata = response.body.toString();
-
-        rawdatamap = jsonDecode(response.body.toString());
+        rawdatamap = jsonDecode(res.body);
 
         datalist = rawdatamap["books"];
       });
@@ -35,69 +37,66 @@ class _HadithBooksState extends State<HadithBooks> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getBooksofHadith();
+
+    getapi();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Books of Hadiths "),
-          centerTitle: true,
+      appBar: AppBar(
+        title: Text(
+          "Hadith Books Collection",
+          style: TextStyle(color: Color(0XFFF2F2F2)),
         ),
-        body: ListView.builder(
-            itemBuilder: (context, index) {
-              if (datalist[index] == null) {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else {
-                return ListTile(
-                  onTap: () {
-                    var slugname = datalist[index]["bookSlug"];
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HadithChapters(slugname),
-                        ));
-                  },
-                  tileColor: Colors.indigo[900],
-                  textColor: Colors.white,
-                  title: Text(
-                    datalist[index]["bookName"].toString(),
+        centerTitle: true,
+        backgroundColor: Color(0XFF0D0D0D),
+      ),
+      body: datalist.isEmpty
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ListView.builder(
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ListTile(
+                    onTap: () {
+                      var bookSlug = datalist[index]["bookSlug"];
+                
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HadithChapters(bookSlug),
+                          ));
+                    },
+                    tileColor:  Color(0XFF404040),
+                    textColor: Color(0XFFF2F2F2),
+                    title: Text(
+                      datalist[index]["bookName"].toString(),
+                      style: TextStyle(fontFamily: "alq"),
+                    ),
+                    // subtitle: Text(datalist[index]["writerName"].toString()),
+                    leading: Text("${index + 1}"),
+                    trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        datalist[index]["hadiths_count"] == "0"
+                            ? Text("")
+                            :
+                
+                        Text("Ahadiths :" +
+                            datalist[index]["hadiths_count"].toString()),
+                        Text("Chapters :" +
+                            datalist[index]["chapters_count"].toString()),
+                      ],
+                    ),
                   ),
-                  leading: Text("${index + 1}"),
-                  subtitle: Text(datalist[index]["writerName"].toString()),
-                  trailing: Column(
-                    children: [
-                      datalist[index]["hadiths_count"] == "0"
-                          ? Text("")
-                          : Text("Ahadiths :" +
-                              datalist[index]["hadiths_count"].toString()),
-                      Text(
-                        "Chapters :" +
-                            datalist[index]["chapters_count"].toString(),
-                        textAlign: TextAlign.justify,
-                      ),
-                    ],
-                  ),
                 );
-              }
-            },
-            itemCount: datalist.length));
+              },
+              itemCount: datalist.length,
+            ),
+      backgroundColor: Color(0XFFF2F2F2),
+    );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

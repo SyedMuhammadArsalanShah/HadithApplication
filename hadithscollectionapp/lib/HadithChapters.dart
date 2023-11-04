@@ -1,8 +1,11 @@
 import 'dart:convert';
-import 'package:hadithscollectionapp/Hadiths.dart';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
 
+import 'package:http/http.dart' as http;
+import 'Hadiths.dart';
+
+// ignore: must_be_immutable
 class HadithChapters extends StatefulWidget {
   var bookSlug;
   HadithChapters(this.bookSlug, {super.key});
@@ -12,73 +15,108 @@ class HadithChapters extends StatefulWidget {
 }
 
 class _HadithChaptersState extends State<HadithChapters> {
-  late String rawdata = "";
   late Map rawdatamap = {};
-  late List<dynamic> datalist = [];
-  void getChaptersofHadith() async {
-    var slug=widget.bookSlug;
-    var response = await http.get(Uri.parse(
-        "https://hadithapi.com/api/$slug/chapters?apiKey=\$2y\$10\$BylaBcXs5Lw7ZOtYmQ3PXO1x15zpp26oc1FeGktdmF6YeYoRd88e"));
-    // print("SMASB =>" + response.body.toString());
+  late List datalist = [];
+  void getapi() async {
+    var slug = widget.bookSlug;
+    var apiKey =
+        "\$2y\$10\$BylaBcXs5Lw7ZOtYmQ3PXO1x15zpp26oc1FeGktdmF6YeYoRd88e";
+    var res = await http.get(
+        Uri.parse("https://hadithapi.com/api/$slug/chapters?apiKey=$apiKey"));
 
-    if (response.statusCode == 200) {
+// print("SMASB" + res.body);
+
+    if (res.statusCode == 200) {
       setState(() {
-        // rawdata = response.body.toString();
-
-        rawdatamap = jsonDecode(response.body.toString());
-
+        rawdatamap = jsonDecode(res.body);
         datalist = rawdatamap["chapters"];
       });
     }
   }
 
-@override
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getChaptersofHadith();
+
+    getapi();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Chapters of Hadiths "),
-          centerTitle: true,
+      appBar: AppBar(
+        title: Text(
+          "Hadith Books Chapters",
+          style: TextStyle(color: Color(0XFFF2F2F2)),
         ),
-        body: ListView.builder(
-            itemBuilder: (context, index) {
-              if (datalist[index] == null) {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else {
-                return Card(
+        centerTitle: true,
+        backgroundColor: Color(0XFF0D0D0D),
+      ),
+      body: datalist.isEmpty
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ListView.builder(
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: ListTile(
                     onTap: () {
+                      var bookSlug = datalist[index]["bookSlug"];
                       var chapterNumber = datalist[index]["chapterNumber"];
+
+                      print(bookSlug + chapterNumber);
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Hadiths(chapterNumber),
+                            builder: (context) =>
+                                Hadiths(bookSlug, chapterNumber),
                           ));
                     },
-                    tileColor: Colors.indigo[900],
-                    textColor: Colors.white,
-                    title: Text(
-                      datalist[index]["chapterArabic"].toString(),
-                         style: TextStyle(fontFamily: "alq")
+                    tileColor: Color(0XFFF2F2F2),
+                    textColor: Color(0XFF404040),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                         CircleAvatar(
+                        backgroundColor: Color(0XFF0D0D0D),
+                        child: Text(
+                          "${index + 1}",
+                          style: TextStyle(color: Color(0XFFF2F2F2)),
+                        )),
+                          SizedBox(
+                          height: 15,
+                        ),
+                        Text(
+                          datalist[index]["chapterArabic"].toString(),
+                          style: TextStyle(fontFamily: "alq", fontSize: 15),
+                          textDirection: TextDirection.rtl,
+                          textAlign: TextAlign.justify,
+                        ),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text(datalist[index]["chapterUrdu"].toString(),
+                            textDirection: TextDirection.rtl,
+                            textAlign: TextAlign.justify,
+                            style: TextStyle(fontFamily: "jameel")),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          datalist[index]["chapterEnglish"].toString(),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
-                    leading: Text("${index + 1}"),
-                    subtitle: Text(datalist[index]["chapterEnglish"].toString()),
-                    trailing: Text(
-                       datalist[index]["chapterUrdu"].toString(),
-                    
-                      textDirection: TextDirection.rtl,
-                    ),
+                 
                   ),
                 );
-              }
-            },
-            itemCount: datalist.length));
+              },
+              itemCount: datalist.length,
+            ),
+      backgroundColor: Color(0XFFD9D9D9),
+    );
   }
 }
