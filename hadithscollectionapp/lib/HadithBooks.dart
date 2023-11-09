@@ -13,9 +13,6 @@ class HadithBooks extends StatefulWidget {
 class _HadithBooksState extends State<HadithBooks> {
   late Map rawdatamap = {};
   late List datalist = [];
-
-
-
   
   void getapi() async {
     var apiKey =
